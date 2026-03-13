@@ -17,6 +17,9 @@ https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 This software is distributed on an "AS IS" basis without 
 warranties or conditions of any kind, either express or implied.
 
+## Light GUI profile
+This repository now defaults to a light GUI profile aimed at Java 21 on 64-bit runtimes. In the GUI, secondary suppression is limited to the modular workflow while existing data-input functionality (microdata, tabular input, apriori handling, and batch support) remains available. The bundled free-solver path remains the existing SCIP/CBC combination so the light build stays license-free.
+
 ## Getting started
 A document describing step-by-step the basics of Tau-Argus is available [**here**](https://github.com/sdcTools/manuals/blob/master/tau-argus/Step-by-step%20test%20procedure%20%20TauArgus.pdf).</br> This document is based on version 4.1.7 build 4.
 

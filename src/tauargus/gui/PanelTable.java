@@ -391,6 +391,7 @@ public class PanelTable extends javax.swing.JPanel {
         radioButtonUwe.setVisible(false);
         radioButtonMarginal.setVisible(false);
         checkBoxInverseWeight.setVisible(false);
+        applyLightVersionMode(TableSet.SUP_NO);
       
         buttonMap = new HashMap<>();
    /*         public static final int SUP_NO = 0;
@@ -461,7 +462,13 @@ public class PanelTable extends javax.swing.JPanel {
             buttonMap.get(tableSet.suppressed).setSelected(true);
         }
         else{
-            if (tableSet.suppressed==TableSet.SUP_NO) radioButtonHyperCube.setSelected(true);
+            if (tableSet.suppressed==TableSet.SUP_NO) {
+                if (Application.isLightVersion()) {
+                    radioButtonModular.setSelected(true);
+                } else {
+                    radioButtonHyperCube.setSelected(true);
+                }
+            }
         }
         
         // Should be at the end of this function, otherwise the setSelectedIndex triggers an Action with incorrect settings
@@ -669,6 +676,7 @@ public class PanelTable extends javax.swing.JPanel {
         }
         labelPTable.setVisible(CKMpossible && radioButtonCellKey.isSelected());
         labelPTableSep.setVisible(CKMpossible && radioButtonCellKey.isSelected());
+        applyLightVersionMode(s);
         
         for (int i = 0; i < radioButtonSuppress.length; i++) {
             radioButtonSuppress[i].setEnabled(s == TableSet.SUP_NO);
@@ -717,6 +725,24 @@ public class PanelTable extends javax.swing.JPanel {
 
         buttonAudit.setEnabled((buttonUndoSuppress.isEnabled() && !b) || Application.isAnco());
         buttonPriory.setEnabled(s == TableSet.SUP_NO);
+    }
+
+    private void applyLightVersionMode(int suppressedState) {
+        if (!Application.isLightVersion()) {
+            return;
+        }
+        radioButtonHyperCube.setVisible(false);
+        radioButtonOptimal.setVisible(false);
+        radioButtonNetwork.setVisible(false);
+        radioButtonRounding.setVisible(false);
+        radioButtonCta.setVisible(false);
+        radioButtonUwe.setVisible(false);
+        radioButtonMarginal.setVisible(false);
+        radioButtonCellKey.setVisible(false);
+        checkBoxInverseWeight.setVisible(false);
+        if (suppressedState == TableSet.SUP_NO && !radioButtonModular.isSelected()) {
+            radioButtonModular.setSelected(true);
+        }
     }
 
     private void createCodeList() {

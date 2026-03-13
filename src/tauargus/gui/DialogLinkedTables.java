@@ -75,6 +75,9 @@ public class DialogLinkedTables extends DialogBase {
     public DialogLinkedTables(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        if (Application.isLightVersion()) {
+            buttonSuppressHypercube.setVisible(false);
+        }
         initLists();
     }
 
