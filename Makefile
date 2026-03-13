@@ -1,7 +1,7 @@
 ######################################################################################
 # Makefile for making needed dll's
-# use "make 32BIT=true" to compile for 32 bit system (default)
-# use "make 32BIT=false" to compile for 64 bit system
+# use "make 32BIT=true" to compile for 32 bit system
+# use "make 32BIT=false" to compile for 64 bit system (default)
 # use "make SOLVER=foo" to compile only for selected LP-solvers
 #	    where foo s a comma separated list
 #	    Allowed solvers: CP=Cplex, XP=Xpress, SC=SCIP
@@ -16,21 +16,23 @@ TAUHITASDIR      = ../tauhitas
 TAUROUNDERDIR    = ../taurounder
 LIBTAUARGUSDIR   = ../libtauargus
 
-32BIT            = true
-#32BIT            = false
+32BIT            = false
+#32BIT            = true
 
 ####### Compiler, tools and options
 ifeq ($(32BIT), false)  # 64 bit assumed
     BITS         = -m64 -D_LP64
     ARCH         = x86_64
     CND_PLATFORM = MinGW-Windows64
-    JAVADIR      = D:/Peter-Paul/Documents/Java/zulu8.52.0.23-ca-jdk8.0.282-win_x64
+    # Override JAVADIR on your machine when the default sample location does not exist.
+    JAVADIR      ?= D:/Java/temurin-21-x64
     GNUDIR       = C:/Progra~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin
 else                    # 32 bit assumed
     BITS         = -m32
     ARCH         = x86
     CND_PLATFORM = MinGW-Windows
-    JAVADIR      = D:/Peter-Paul/Documents/Java/zulu8.52.0.23-ca-jdk8.0.282-win_i686
+    # Override JAVADIR on your machine when the default sample location does not exist.
+    JAVADIR      ?= D:/Java/temurin-21-x86
     GNUDIR       = C:/Progra~2/mingw-w64/i686-8.1.0-win32-sjlj-rt_v6-rev0/mingw32/bin
 endif
 

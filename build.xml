@@ -9,6 +9,11 @@
 <!-- in the project's Project Properties dialog box.-->
 <project name="TauArgus" default="default" basedir=".">
     <description>Builds, tests, and runs the project TauArgus.</description>
+    <property environment="env"/>
+    <condition property="tauargus.java21.home" value="${env.JAVA_HOME_21_X64}" else="${java.home}">
+        <isset property="env.JAVA_HOME_21_X64"/>
+    </condition>
+    <property name="platforms.default_platform.home" value="${tauargus.java21.home}"/>
     <import file="nbproject/build-impl.xml"/>
     
     <target name="-post-jar">

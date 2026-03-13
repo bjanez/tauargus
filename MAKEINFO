@@ -32,8 +32,8 @@ Go to the directory of tauargus and call "make".
 To pipe the stdout and stderr to a file, use "make 1>foo.log 2>&1"
 
 Available option for this Makefile:
-32BIT=true 		will produce 32bit Windows libraries (default)
-32BIT=false		will produce 64bit Windows libraries
+32BIT=true 		will produce 32bit Windows libraries
+32BIT=false		will produce 64bit Windows libraries (default)
 
 ===============================================
 Assumed directory structure

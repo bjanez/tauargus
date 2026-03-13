@@ -26,6 +26,7 @@ import java.awt.Graphics2D;
 import java.awt.SplashScreen;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -41,6 +42,7 @@ import tauargus.service.TableService;
 public class Application {
 
     private static final Logger LOGGER = Logger.getLogger(Application.class.getName());
+    private static final boolean LIGHT_MODE_ENABLED = Boolean.parseBoolean(System.getProperty("tauargus.light", "true"));
 
     // Version info
     public static final int MAJOR = 4;
@@ -67,14 +69,14 @@ public class Application {
 
     // for interfacing with C++ dll
     static {
-//        System.loadLibrary("TauHitas");           
-        System.loadLibrary("TauRounder");
-        System.loadLibrary("TauHitas");
-        System.loadLibrary("TauArgusJava");                
- }
-    private static TauArgus tauArgus = new TauArgus();
-    private static HiTaSCtrl tauHitas = new HiTaSCtrl();
-    private static RounderCtrl rounder = new RounderCtrl();
+//        System.loadLibrary("TauHitas");
+        loadNativeLibrary("TauRounder");
+        loadNativeLibrary("TauHitas");
+        loadNativeLibrary("TauArgusJava");
+    }
+    private static TauArgus tauArgus;
+    private static HiTaSCtrl tauHitas;
+    private static RounderCtrl rounder;
     private static ArrayList<Variable> variables = new ArrayList<Variable>();
     private static ArrayList<Metadata> metadatas = new ArrayList<Metadata>();
     private static boolean anco = false;
@@ -113,15 +115,15 @@ public class Application {
     }
     
     public static String getRounderVersion(){
-        return rounder.GetVersion();
+        return getRounder().GetVersion();
     }
     
     public static String getHitasVersion(){
-        return tauHitas.GetVersion();
+        return getTauHitasDll().GetVersion();
     }
     
     public static String getArgusJavaVersion(){
-        return tauArgus.GetVersion();
+        return getTauArgusDll().GetVersion();
     }
     
     public static String getSolverName( int solver){
@@ -166,16 +168,67 @@ public class Application {
             return null;
         }
     }
+
+    public static boolean isLightVersion() {
+        return LIGHT_MODE_ENABLED;
+    }
+
+    private static boolean is64BitJvm() {
+        String architecture = System.getProperty("os.arch", "");
+        if (architecture.contains("64")) {
+            return true;
+        }
+        return "64".equals(System.getProperty("sun.arch.data.model", ""));
+    }
+
+    private static void loadNativeLibrary(String libraryName) {
+        String mappedLibraryName = System.mapLibraryName(libraryName);
+        List<File> searchLocations = new ArrayList<>();
+        try {
+            File applicationDirectory = SystemUtils.getApplicationDirectory(Application.class).getCanonicalFile();
+            File directory64Bit = new File(applicationDirectory, "64bitdlls");
+            File directory32Bit = new File(applicationDirectory, "32bitdlls");
+            if (is64BitJvm()) {
+                searchLocations.add(new File(directory64Bit, mappedLibraryName));
+                searchLocations.add(new File(applicationDirectory, mappedLibraryName));
+                searchLocations.add(new File(directory32Bit, mappedLibraryName));
+            } else {
+                searchLocations.add(new File(directory32Bit, mappedLibraryName));
+                searchLocations.add(new File(applicationDirectory, mappedLibraryName));
+                searchLocations.add(new File(directory64Bit, mappedLibraryName));
+            }
+        }
+        catch (IOException | URISyntaxException ex) {
+            LOGGER.fine(ex.toString());
+        }
+
+        for (File searchLocation : searchLocations) {
+            if (searchLocation.isFile()) {
+                System.load(searchLocation.getAbsolutePath());
+                return;
+            }
+        }
+        System.loadLibrary(libraryName);
+    }
     
     public static TauArgus getTauArgusDll() {
+        if (tauArgus == null) {
+            tauArgus = new TauArgus();
+        }
         return tauArgus;
     }
 
     public static HiTaSCtrl getTauHitasDll() {
+        if (tauHitas == null) {
+            tauHitas = new HiTaSCtrl();
+        }
         return tauHitas;
     }
     
     public static RounderCtrl getRounder() {
+        if (rounder == null) {
+            rounder = new RounderCtrl();
+        }
         return rounder;
     }
 
@@ -395,23 +448,12 @@ public class Application {
     * @param args the command line arguments
     */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
+        /* Set the system look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Windows".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                    
-                }
-            }
-// Anco 1.6            
-//        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-        } catch (ClassNotFoundException ex) {
-            LOGGER.log(java.util.logging.Level.SEVERE, null, ex);}
+            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+         } catch (ClassNotFoundException ex) {
+             LOGGER.log(java.util.logging.Level.SEVERE, null, ex);}
           catch (InstantiationException ex) {
             LOGGER.log(java.util.logging.Level.SEVERE, null, ex);}
           catch (IllegalAccessException ex) {
@@ -444,11 +486,13 @@ public class Application {
         SystemUtils.writeLogbook("Start of TauArgus run");
         SystemUtils.writeLogbook("TauArgus version " + Application.getFullVersion() + " build " + Application.BUILD);
         SystemUtils.writeLogbook("ArgusLib.jar version " + getArgusLibVersion());
-        SystemUtils.writeLogbook("TauRounder.dll version " + rounder.GetVersion());
-        SystemUtils.writeLogbook("TauHitas.dll version " + tauHitas.GetVersion());
-        SystemUtils.writeLogbook("TauArgusJava.dll version " + tauArgus.GetVersion());
+        SystemUtils.writeLogbook("TauRounder.dll version " + getRounder().GetVersion());
+        SystemUtils.writeLogbook("TauHitas.dll version " + getTauHitasDll().GetVersion());
+        SystemUtils.writeLogbook("TauArgusJava.dll version " + getTauArgusDll().GetVersion());
         SystemUtils.writeLogbook("--------------------------");
-        solverSelected = SystemUtils.getRegInteger("optimal", "solverused", SOLVER_SOPLEX);
+        solverSelected = isLightVersion()
+                ? SOLVER_SOPLEX
+                : SystemUtils.getRegInteger("optimal", "solverused", SOLVER_SOPLEX);
         generalMaxHitasTime = SystemUtils.getRegInteger("optimal", "maxhitastime", 1);
         anco = SystemUtils.getRegBoolean("general", "anco", false);
         batchDataPath = "";

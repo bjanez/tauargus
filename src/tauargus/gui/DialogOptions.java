@@ -58,21 +58,30 @@ public class DialogOptions extends DialogBase {
         bG.add(jRadioButtonCPlex);
         bG.add(jRadioButtonSCIP);  
         jRadioButtonNoSolver.setVisible(false);
+        if (Application.isLightVersion()) {
+            jRadioButtonXPress.setVisible(false);
+            jRadioButtonCPlex.setVisible(false);
+            jRadioButtonSCIP.setText("SCIP / CBC (free)");
+            jRadioButtonSCIP.setSelected(true);
+        }
         int i = SystemUtils.getRegInteger("optimal", "maxhitastime", Application.generalMaxHitasTime);
         jTextFieldMaxHitasTime.setText(i+"");
         jTextLogFile.setText(SystemUtils.getRegString("general", "logbook", Application.getTempFile("logbook.txt")));
         jTextCplexLicenseFile.setText(SystemUtils.getRegString("optimal", "cplexlicensefile", "access.ilm"));
         
-        i = SystemUtils.getRegInteger("optimal", "solverused", Application.solverSelected);
+        i = Application.isLightVersion()
+                ? Application.SOLVER_SOPLEX
+                : SystemUtils.getRegInteger("optimal", "solverused", Application.solverSelected);
         switch (i) {
             case Application.SOLVER_XPRESS : {jRadioButtonXPress.setSelected(true); break;}
             case Application.SOLVER_CPLEX: {jRadioButtonCPlex.setSelected(true); break;}
             case Application.SOLVER_SOPLEX : {jRadioButtonSCIP.setSelected(true); break;}
             default : {jRadioButtonSCIP.setSelected(true);}
         } 
-        jLabelCplexLicenseFile.setVisible(jRadioButtonCPlex.isSelected());
-        jTextCplexLicenseFile.setVisible(jRadioButtonCPlex.isSelected());
-        jButtonCplexLicenseFile.setVisible(jRadioButtonCPlex.isSelected());
+        boolean showCplexLicense = !Application.isLightVersion() && jRadioButtonCPlex.isSelected();
+        jLabelCplexLicenseFile.setVisible(showCplexLicense);
+        jTextCplexLicenseFile.setVisible(showCplexLicense);
+        jButtonCplexLicenseFile.setVisible(showCplexLicense);
     }
     
     /**
@@ -334,6 +343,7 @@ public class DialogOptions extends DialogBase {
         if (jRadioButtonXPress.isSelected()) {i=Application.SOLVER_XPRESS;}
         if (jRadioButtonCPlex.isSelected())  {i=Application.SOLVER_CPLEX;}
         if (jRadioButtonSCIP.isSelected())   {i=Application.SOLVER_SOPLEX;}
+        if (Application.isLightVersion())    {i=Application.SOLVER_SOPLEX;}
         SystemUtils.putRegInteger("optimal", "solverused", i);
         Application.solverSelected = i;
         setVisible(false);
@@ -341,9 +351,10 @@ public class DialogOptions extends DialogBase {
     }//GEN-LAST:event_jButtonOKActionPerformed
 
     private void jRadioButtonCPlexItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jRadioButtonCPlexItemStateChanged
-        jLabelCplexLicenseFile.setVisible(jRadioButtonCPlex.isSelected());
-        jTextCplexLicenseFile.setVisible(jRadioButtonCPlex.isSelected());
-        jButtonCplexLicenseFile.setVisible(jRadioButtonCPlex.isSelected());
+        boolean showCplexLicense = !Application.isLightVersion() && jRadioButtonCPlex.isSelected();
+        jLabelCplexLicenseFile.setVisible(showCplexLicense);
+        jTextCplexLicenseFile.setVisible(showCplexLicense);
+        jButtonCplexLicenseFile.setVisible(showCplexLicense);
     }//GEN-LAST:event_jRadioButtonCPlexItemStateChanged
 
     private void jButtonCplexLicenseFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCplexLicenseFileActionPerformed
