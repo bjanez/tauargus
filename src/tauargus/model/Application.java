@@ -42,7 +42,7 @@ import tauargus.service.TableService;
 public class Application {
 
     private static final Logger LOGGER = Logger.getLogger(Application.class.getName());
-    private static final boolean LIGHT_GUI = Boolean.parseBoolean(System.getProperty("tauargus.light", "true"));
+    private static final boolean LIGHT_MODE_ENABLED = Boolean.parseBoolean(System.getProperty("tauargus.light", "true"));
 
     // Version info
     public static final int MAJOR = 4;
@@ -170,12 +170,15 @@ public class Application {
     }
 
     public static boolean isLightVersion() {
-        return LIGHT_GUI;
+        return LIGHT_MODE_ENABLED;
     }
 
     private static boolean is64BitJvm() {
-        String dataModel = System.getProperty("sun.arch.data.model", "");
-        return "64".equals(dataModel) || System.getProperty("os.arch", "").contains("64");
+        String architecture = System.getProperty("os.arch", "");
+        if (architecture.contains("64")) {
+            return true;
+        }
+        return "64".equals(System.getProperty("sun.arch.data.model", ""));
     }
 
     private static void loadNativeLibrary(String libraryName) {
@@ -183,14 +186,16 @@ public class Application {
         List<File> searchLocations = new ArrayList<>();
         try {
             File applicationDirectory = SystemUtils.getApplicationDirectory(Application.class).getCanonicalFile();
+            File directory64Bit = new File(applicationDirectory, "64bitdlls");
+            File directory32Bit = new File(applicationDirectory, "32bitdlls");
             if (is64BitJvm()) {
-                searchLocations.add(new File(new File(applicationDirectory, "64bitdlls"), mappedLibraryName));
+                searchLocations.add(new File(directory64Bit, mappedLibraryName));
                 searchLocations.add(new File(applicationDirectory, mappedLibraryName));
-                searchLocations.add(new File(new File(applicationDirectory, "32bitdlls"), mappedLibraryName));
+                searchLocations.add(new File(directory32Bit, mappedLibraryName));
             } else {
-                searchLocations.add(new File(new File(applicationDirectory, "32bitdlls"), mappedLibraryName));
+                searchLocations.add(new File(directory32Bit, mappedLibraryName));
                 searchLocations.add(new File(applicationDirectory, mappedLibraryName));
-                searchLocations.add(new File(new File(applicationDirectory, "64bitdlls"), mappedLibraryName));
+                searchLocations.add(new File(directory64Bit, mappedLibraryName));
             }
         }
         catch (IOException | URISyntaxException ex) {
@@ -485,10 +490,9 @@ public class Application {
         SystemUtils.writeLogbook("TauHitas.dll version " + getTauHitasDll().GetVersion());
         SystemUtils.writeLogbook("TauArgusJava.dll version " + getTauArgusDll().GetVersion());
         SystemUtils.writeLogbook("--------------------------");
-        solverSelected = SystemUtils.getRegInteger("optimal", "solverused", SOLVER_SOPLEX);
-        if (isLightVersion()) {
-            solverSelected = SOLVER_SOPLEX;
-        }
+        solverSelected = isLightVersion()
+                ? SOLVER_SOPLEX
+                : SystemUtils.getRegInteger("optimal", "solverused", SOLVER_SOPLEX);
         generalMaxHitasTime = SystemUtils.getRegInteger("optimal", "maxhitastime", 1);
         anco = SystemUtils.getRegBoolean("general", "anco", false);
         batchDataPath = "";

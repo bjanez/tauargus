@@ -24,13 +24,15 @@ ifeq ($(32BIT), false)  # 64 bit assumed
     BITS         = -m64 -D_LP64
     ARCH         = x86_64
     CND_PLATFORM = MinGW-Windows64
-    JAVADIR      = D:/Java/temurin-21-x64
+    # Override JAVADIR on your machine when the default sample location does not exist.
+    JAVADIR      ?= D:/Java/temurin-21-x64
     GNUDIR       = C:/Progra~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin
 else                    # 32 bit assumed
     BITS         = -m32
     ARCH         = x86
     CND_PLATFORM = MinGW-Windows
-    JAVADIR      = D:/Java/temurin-21-x86
+    # Override JAVADIR on your machine when the default sample location does not exist.
+    JAVADIR      ?= D:/Java/temurin-21-x86
     GNUDIR       = C:/Progra~2/mingw-w64/i686-8.1.0-win32-sjlj-rt_v6-rev0/mingw32/bin
 endif
 

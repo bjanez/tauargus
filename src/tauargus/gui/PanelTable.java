@@ -731,14 +731,19 @@ public class PanelTable extends javax.swing.JPanel {
         if (!Application.isLightVersion()) {
             return;
         }
-        radioButtonHyperCube.setVisible(false);
-        radioButtonOptimal.setVisible(false);
-        radioButtonNetwork.setVisible(false);
-        radioButtonRounding.setVisible(false);
-        radioButtonCta.setVisible(false);
-        radioButtonUwe.setVisible(false);
-        radioButtonMarginal.setVisible(false);
-        radioButtonCellKey.setVisible(false);
+        javax.swing.JComponent[] hiddenComponents = {
+            radioButtonHyperCube,
+            radioButtonOptimal,
+            radioButtonNetwork,
+            radioButtonRounding,
+            radioButtonCta,
+            radioButtonUwe,
+            radioButtonMarginal,
+            radioButtonCellKey
+        };
+        for (javax.swing.JComponent hiddenComponent : hiddenComponents) {
+            hiddenComponent.setVisible(false);
+        }
         checkBoxInverseWeight.setVisible(false);
         if (suppressedState == TableSet.SUP_NO && !radioButtonModular.isSelected()) {
             radioButtonModular.setSelected(true);
